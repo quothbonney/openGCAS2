@@ -26,6 +26,8 @@ rqsDataBlock::rqsDataBlock(int id, int posX, int posY,
     _res = RasterQuery::get().defineLLRes(m_llOrigin);
     m_rqsDataInfo = &rq.m_dataDirTransform;
     m_rqsCallOrder = &rq.m_rasterCallOrder;
+
+    n_readFromRaster();
     readFromRaster();
     std::cout << "Raster Origin: " << m_origin.x << " " << m_origin.y << " " << m_origin.r << "\n\n\n";
     for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
@@ -253,7 +255,45 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
 }
 
 void rqsDataBlock::n_readFromRaster() {
+    // Determining an appropriate negative index with a reference to a nearby raster
+    nPoint t;
+    if(m_origin.isNullPoint()) {
+        nPoint working;
+        bool isDefined = false;
+        // Iterate through the rasterCallOrder, looking for the raster that most closely to the bottom right of the point
+        for (int i = 0; i < 9; ++i) {
+            // If the raster doesn't exist, skip it (must reference point outside raster database to raster inside database)
+            if(std::get<1>(m_rqsCallOrder[0][i]) == -1) continue;
+            // Approximate the index of a raster from the llResolution
+            int lat = -1 * (m_rqsDataInfo[0][i].lat_o - m_llOrigin.lat) / std::get<0>(_res);
+            int lon = -1 * (m_rqsDataInfo[0][i].lon_o - m_llOrigin.lon) / std::get<1>(_res);
+            // If both the lat and lon index are negative (means the raster is to the bottom right of the point)
+            // Then define a working raster, but continue iterating through the rest of the rasters to determine
+            // If there is a better fit
+            if (lat < 0 && lon < 0) {
+                if(!isDefined) {
+                    working = nPoint{lat, lon, std::get<1>(m_rqsCallOrder[0][i])};
+                    isDefined = true;
+                } else {
+                    lat > working.y && lon > working.x
+                        ? working = nPoint{lat, lon, std::get<1>(m_rqsCallOrder[0][i])}
+                        : working = working;
+                }
+            }
+        }
+        isDefined ? : throw rqsTargetNotFoundInCallOrder{};
+    } else {
+        t = m_origin;
+    }
 
+
+    int rasterIndexInCallOrder;
+    for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
+        if(std::get<1>(m_rqsCallOrder[0][i]) == m_origin.r) { rasterIndexInCallOrder = i; break; }
+    }
+
+
+    std::cout << t;
 }
 
 
