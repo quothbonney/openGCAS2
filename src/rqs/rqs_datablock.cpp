@@ -28,7 +28,6 @@ rqsDataBlock::rqsDataBlock(int id, int posX, int posY,
     m_rqsCallOrder = &rq.m_rasterCallOrder;
 
     n_readFromRaster();
-    readFromRaster();
     std::cout << "Raster Origin: " << m_origin.x << " " << m_origin.y << " " << m_origin.r << "\n\n\n";
     for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
         if(std::get<1>(m_rqsCallOrder[0][i]) == m_origin.r) { /*std::cout<< "Found Index "<< i << "\n" ; break;*/ }
@@ -247,7 +246,7 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
                                                       std::get<0>(nLocs).x,
                                                       std::get<0>(nLocs).y + row,
                                                       scanX, 1,
-                                                      _spBlock[row + blockIndex.y].get() + blockIndex.x,
+                                                      _spBlock[row + blockIndex.x].get() + blockIndex.y,
                                                       scanX, 1, GDT_Int32,
                                                       0, 0
                                                       );
@@ -281,18 +280,39 @@ void rqsDataBlock::n_readFromRaster() {
                 }
             }
         }
+        t = working;
         isDefined ? : throw rqsTargetNotFoundInCallOrder{};
     } else {
         t = m_origin;
     }
 
-
+    nPoint ras = t; // GNU compiler is being weird and making me do this or UB???
     int rasterIndexInCallOrder;
     for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
-        if(std::get<1>(m_rqsCallOrder[0][i]) == m_origin.r) { rasterIndexInCallOrder = i; break; }
+        if(std::get<1>(m_rqsCallOrder[0][i]) == ras.r) { rasterIndexInCallOrder = i; break; }
     }
+    ras.r = rasterIndexInCallOrder;
+    bool xIntersections, yIntersections;
+    xIntersections = (ras.x + BLOCK_SIZE > m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize) || (ras.x > -1 * BLOCK_SIZE && ras.x < 0);
+    yIntersections = (ras.y + BLOCK_SIZE > m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize) || (ras.y > -1 * BLOCK_SIZE && ras.y < 0);
 
 
+    if(!xIntersections && !yIntersections) {
+        auto edges = std::make_tuple(ras, nPoint{ras.x + BLOCK_SIZE, ras.y + BLOCK_SIZE, rasterIndexInCallOrder});
+        readRasterFromTuple(rasterIndexInCallOrder, edges, nPoint{0, 0});
+    } else if(xIntersections && !yIntersections) {
+        int yBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize;
+        nPoint p1{ras};
+        nPoint p2{t.y, yBound, rasterIndexInCallOrder + 1};
+        nPoint p3{t.y, (t.x + BLOCK_SIZE) - yBound, rasterIndexInCallOrder + 1};
+        nPoint p4{t.y + BLOCK_SIZE, t.x, t.r};
+        nPoint p5{yBound, ras.y + BLOCK_SIZE, rasterIndexInCallOrder};
+        nPoint p6{t.y + BLOCK_SIZE, (t.x + BLOCK_SIZE) - yBound, rasterIndexInCallOrder + 1};
+        if(p1.x >= 0 && p1.y >= 0 && p5.x >= 0 && p5.y >= 0) {
+            auto tie1 = std::make_tuple(p1, p5);
+            readRasterFromTuple(rasterIndexInCallOrder, tie1, nPoint{0, 0, 0});
+        }
+    }
     std::cout << t;
 }
 
