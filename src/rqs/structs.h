@@ -28,6 +28,8 @@ namespace RQS::structures {
 
         [[nodiscard]] bool isNullPoint() const;
 
+        nPoint reflect();
+
     };
 
 /// \brief znPoint

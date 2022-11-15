@@ -26,6 +26,10 @@ bool nPoint::isNullPoint() const {
     return (r == -1);
 }
 
+nPoint nPoint::reflect() {
+    return nPoint{this->y, this->x, this->r};
+}
+
 std::ostream& operator<<(std::ostream& os, const nPoint& n) {
     return os << "NPOINT: " << "{" << n.x << ", " << n.y << ", " << n.r << "}\n";
 }
