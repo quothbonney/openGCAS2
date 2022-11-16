@@ -372,6 +372,50 @@ void rqsDataBlock::n_readFromRaster() {
                 readRasterFromTuple(newRaster, tie2, nPoint{0, yBound - p1.y, 0});
         }
     }
+    else if(xIntersections && yIntersections) {
+        /*
+         * |-----------------|
+         * | p1     | p2     |
+         * |     p3 |     p4 |
+         * |--------|--------|
+         * | p5     | p6     |
+         * |     p7 |     p8 |
+         * |-----------------|
+         */
+        nPoint p7, p8; // Default initialize special extra nPoints
+
+        int xBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize;
+        int yBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize;
+
+        int rasterX = rasterIndexInCallOrder + 1;
+        int rasterY = rasterIndexInCallOrder + 3;
+        int rasterXY = rasterIndexInCallOrder + 4;
+
+        p1 = nPoint(ras);
+        p3 = nPoint{xBound, yBound, rasterIndexInCallOrder};
+
+        if(negativeInd) {
+            p2 = nPoint{0, yBound + ras.y, rasterX};
+            p4 = nPoint{BLOCK_SIZE + ras.x, yBound, rasterX};
+        } else {
+            p2 = nPoint{0, ras.y, rasterX};
+            p4 = nPoint{BLOCK_SIZE - (xBound - ras.x), yBound, rasterX};
+        }
+
+        if(p1.x >= 0 && p1.y >= 0 && p3.x >= 0 && p3.y >= 0) {
+            auto tie1 = std::make_tuple(p1, p3);
+            readRasterFromTuple(rasterIndexInCallOrder, tie1, nPoint{0, 0, 0});
+        }
+
+        if(p2.x >= 0 && p2.y >= 0 && p4.x >= 0 && p4.y >= 0) {
+            auto tie2 = std::make_tuple(p2, p4);
+            if(negativeInd)
+                readRasterFromTuple(rasterIndexInCallOrder - 2, tie2, nPoint{-1 * ras.x, 0, 0});
+            else
+                readRasterFromTuple(rasterX, tie2, nPoint{xBound - p1.x, 0, 0});
+        }
+    }
+
     std::cout << t;
 }
 

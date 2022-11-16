@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     rq.init(llPoint{41.9, -89.9 -1.2});
     RQS::front::DBVis vis;
     std::vector<llPoint> v{
-        llPoint{42.1, -91.4}
+        llPoint{42.1, -92.4}
     };
     vis.loadPoints(v);
     vis.render();
