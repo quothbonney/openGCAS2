@@ -305,3 +305,21 @@ auto RasterQuery::defineLLRes(llPoint loc) -> std::tuple<double, double, int> {
     return std::make_tuple(m_dataDirTransform[*lambIndex].lat_res, m_dataDirTransform[*lambIndex].lon_res, *lambIndex);
 }
 
+void RasterQuery::forceOriginTransform(structures::llPoint loc) {
+    m_rasterCallOrder = defineCallOrder(loc);
+    int index = 0;
+    // Index across a 3x3 matrix
+    for(int i = -1; i < 2; ++i) {
+        for(int j = -1; j < 2; ++j) {
+            // Get origin of DataBlock
+            auto ll = offsetLL(loc, i*BLOCK_SIZE, j*BLOCK_SIZE, m_dataDirTransform);
+            nPoint origin = discreteIndex(ll);
+            // Allocate memory for it in array
+            db[index] = std::make_unique<RQS::rqsDataBlock>(index, j, i, *this, origin, ll);
+            // Save origin to protected attribute
+            m_dbOrigins[index] = origin;
+            index++;
+        }
+    }
+}
+

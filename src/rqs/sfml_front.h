@@ -8,7 +8,8 @@
 
 #include "rqs.h"
 #include <SFML/Graphics.hpp>
-
+#include <thread>
+#include <utility>
 
 
 namespace RQS::front {
@@ -23,6 +24,8 @@ namespace RQS::front {
         std::vector<sf::CircleShape> m_points;
         std::vector<RasterBorder> m_borders;
 
+        std::unique_ptr<std::thread> m_background_thread;
+
         RasterQuery::_llRes cornerRes;
         double cornerLatRes;
         double cornerLonRes;
@@ -32,8 +35,6 @@ namespace RQS::front {
 
         //const RQS::RasterQuery* m_rqs;
         const int w_size = 0.5 * 512 * 3;
-        sf::RenderWindow m_window = sf::RenderWindow(sf::VideoMode(w_size, w_size), "Datablock Visualization");
-
         const int b_size = BLOCK_SIZE/2;
 
         auto inline llToPx(const RQS::structures::llPoint& loc) -> sf::Vector2f const;
@@ -42,10 +43,17 @@ namespace RQS::front {
 
         friend class RasterBorder;
     public:
+        sf::RenderWindow m_window = sf::RenderWindow(sf::VideoMode(w_size, w_size), "Datablock Visualization");
 
         explicit DBVis(float scale = 0.5);
 
+        void start_thread();
+
+        void end_thread();
+
         void loadPoints(std::vector<structures::llPoint> locs);
+
+        void refresh();
 
         void render();
     };

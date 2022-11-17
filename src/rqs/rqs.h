@@ -175,6 +175,8 @@ public:
 
     ///\brief Get rqsDataBlock pointer from index
     auto getDB(int index) { return db[index].get(); }
+
+    void forceOriginTransform(structures::llPoint loc);
 };
 
 

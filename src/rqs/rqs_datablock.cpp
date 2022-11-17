@@ -27,7 +27,7 @@ rqsDataBlock::rqsDataBlock(int id, int posX, int posY,
     m_rqsDataInfo = &rq.m_dataDirTransform;
     m_rqsCallOrder = &rq.m_rasterCallOrder;
 
-    n_readFromRaster();
+    readFromRaster();
     std::cout << "Raster Origin: " << m_origin.x << " " << m_origin.y << " " << m_origin.r << "\n\n\n";
     for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
         if(std::get<1>(m_rqsCallOrder[0][i]) == m_origin.r) { /*std::cout<< "Found Index "<< i << "\n" ; break;*/ }
@@ -298,6 +298,14 @@ void rqsDataBlock::readFromRaster() {
         if(std::get<1>(m_rqsCallOrder[0][i]) == ras.r) { rasterIndexInCallOrder = i; break; }
     }
     ras.r = rasterIndexInCallOrder;
+
+    int xBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize;
+    int yBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize;
+
+    int rasterX = rasterIndexInCallOrder + 1;
+    int rasterY = rasterIndexInCallOrder + 3;
+    int rasterXY = rasterIndexInCallOrder + 4;
+
     // Determine whether raster has intersections in the x direction, y direction, and if the point does not exist in a raster (negative point)
     bool xIntersections, yIntersections, negativeInd;
     xIntersections = (ras.x + BLOCK_SIZE > m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize) || (ras.x > -1 * BLOCK_SIZE && ras.x < 0);
@@ -325,17 +333,26 @@ void rqsDataBlock::readFromRaster() {
         int newRaster = negativeInd ? rasterIndexInCallOrder : rasterIndexInCallOrder + 1;
         int yBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize;
         p1 = nPoint(ras);
-        p2 = nPoint{0, ras.y, newRaster};
+        p4 = nPoint{xBound, ras.y + BLOCK_SIZE, rasterIndexInCallOrder};
 
-        p5 = nPoint{yBound, ras.y + BLOCK_SIZE, rasterIndexInCallOrder};
-        p6 = nPoint{BLOCK_SIZE - (yBound - ras.x), t.y + BLOCK_SIZE, newRaster};
-        if(p1.x >= 0 && p1.y >= 0 && p5.x >= 0 && p5.y >= 0) {
-            auto tie1 = std::make_tuple(p1, p5);
+        if (negativeInd) {
+            p2 = nPoint{0, BLOCK_SIZE - (yBound - ras.y), rasterIndexInCallOrder};
+            p6 = nPoint{xBound + ras.x, p2.y + BLOCK_SIZE, rasterIndexInCallOrder};
+        } else {
+            p2 = nPoint{0, ras.y, rasterX};
+            p6 = nPoint{BLOCK_SIZE - (yBound - ras.x), t.y + BLOCK_SIZE, rasterX};
+        }
+
+        if(p1.x >= 0 && p1.y >= 0 && p4.x >= 0 && p4.y >= 0) {
+            auto tie1 = std::make_tuple(p1, p4);
             readRasterFromTuple(rasterIndexInCallOrder, tie1, nPoint{0, 0, 0});
         }
         if(p2.x >= 0 && p2.y >= 0 && p6.x >= 0 && p6.y >= 0) {
             auto tie2 = std::make_tuple(p2, p6);
-            readRasterFromTuple(newRaster, tie2, nPoint{yBound - p1.x, 0, 0});
+            if(negativeInd)
+                readRasterFromTuple(rasterIndexInCallOrder, tie2, nPoint{-1 * p1.x, 0, 0});
+            else
+                readRasterFromTuple(rasterX, tie2, nPoint{yBound - p1.x, 0, 0});
         }
     }
     else if(!xIntersections && yIntersections) {
@@ -346,14 +363,13 @@ void rqsDataBlock::readFromRaster() {
          *  p5    *p6*
          */
         int newRaster = negativeInd ? rasterIndexInCallOrder : rasterIndexInCallOrder + 3;
-        int yBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize;
         p1 = nPoint(ras);
         p4 = nPoint{ras.x + BLOCK_SIZE, yBound, rasterIndexInCallOrder};
         // If the points are negative, consider that in the half that should exist
         // No need to do it for the top half as it is guaranteed to be negative and thus unreadable
         if(negativeInd) {
-            p3 = nPoint{yBound + ras.x, 0, newRaster};
-            p6 = nPoint{yBound + ras.x + BLOCK_SIZE, BLOCK_SIZE + ras.y, newRaster};
+            p3 = nPoint{xBound + ras.x, 0, newRaster};
+            p6 = nPoint{xBound + ras.x + BLOCK_SIZE, BLOCK_SIZE + ras.y, newRaster};
         } else {
             p3 = nPoint{ras.x, 0, newRaster};
             p6 = nPoint{ras.x + BLOCK_SIZE, BLOCK_SIZE - (yBound - ras.y), newRaster};
@@ -387,13 +403,6 @@ void rqsDataBlock::readFromRaster() {
          * |-----------------|
          */
         nPoint p7, p8; // Default initialize special extra nPoints
-
-        int xBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize;
-        int yBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_ySize;
-
-        int rasterX = rasterIndexInCallOrder + 1;
-        int rasterY = rasterIndexInCallOrder + 3;
-        int rasterXY = rasterIndexInCallOrder + 4;
 
         p1 = nPoint(ras);
         p3 = nPoint{xBound, yBound, rasterIndexInCallOrder};

@@ -57,16 +57,12 @@ auto inline DBVis::llToPx(const RQS::structures::llPoint& loc) -> sf::Vector2f c
 }
 
 void DBVis::render() {
-// set the shape color to green
-
     while (m_window.isOpen()) {
         sf::Event event;
         while (m_window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 m_window.close();
         }
-
-        m_window.clear();
         for(int i = 0; i < 9; ++i) {
             m_window.draw(m_sprite[i]);
         }
@@ -90,6 +86,14 @@ void DBVis::loadPoints(std::vector<llPoint> locs) {
 
         m_points.push_back(shape);
     }
+}
+
+void DBVis::refresh() {
+    m_borders.clear();
+    llOrigin = m_rqs::get().getDB(0)->m_llOrigin;
+    cornerRes = m_rqs::get().defineLLRes(llOrigin);
+    std::cout << cornerLatRes << " " << cornerLonRes;
+    loadData();
 }
 
 
@@ -127,4 +131,13 @@ RasterBorder::RasterBorder(int rasterNumber, const RasterQuery *rqs, DBVis *vis)
         m_verticies[i] = vertex;
     }
 
+}
+
+void DBVis::start_thread() {
+    m_background_thread.reset(new std::thread(&DBVis::render, this));
+}
+
+void DBVis::end_thread() {
+    m_background_thread->join();        // wait for thread termination
+    m_background_thread.reset(NULL);
 }
