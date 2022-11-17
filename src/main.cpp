@@ -5,7 +5,7 @@ using namespace RQS::structures;
 
 int main(int argc, char *argv[]) {
     RQS::RasterQuery& rq = RQS::RasterQuery::get();
-    rq.init(llPoint{41.9, -89.9 -1.2});
+    rq.init(llPoint{41.9, -91.2});
     RQS::front::DBVis vis;
     std::vector<llPoint> v{
         llPoint{42.1, -92.4}
