@@ -63,6 +63,13 @@ void DBVis::render() {
             if (event.type == sf::Event::Closed)
                 m_window.close();
         }
+
+        std::unique_lock<std::mutex> lock(mtx);
+        while(!notified) {
+            cv.wait(lock);
+        }
+        lock.unlock();
+
         for(int i = 0; i < 9; ++i) {
             m_window.draw(m_sprite[i]);
         }
@@ -72,6 +79,9 @@ void DBVis::render() {
         for( const auto& p : m_points)
             m_window.draw(p);
         m_window.display();
+
+        lock.lock();
+        notified = false;
     }
 }
 
@@ -89,11 +99,16 @@ void DBVis::loadPoints(std::vector<llPoint> locs) {
 }
 
 void DBVis::refresh() {
+    std::unique_lock<std::mutex> lock(mtx);
+
     m_borders.clear();
     llOrigin = m_rqs::get().getDB(0)->m_llOrigin;
     cornerRes = m_rqs::get().defineLLRes(llOrigin);
     std::cout << cornerLatRes << " " << cornerLonRes;
     loadData();
+
+    notified = true;
+    cv.notify_all();
 }
 
 

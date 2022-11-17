@@ -9,8 +9,8 @@
 #include "rqs.h"
 #include <SFML/Graphics.hpp>
 #include <thread>
-#include <utility>
-
+#include <mutex>
+#include <condition_variable>
 
 namespace RQS::front {
     class RasterBorder;
@@ -25,6 +25,9 @@ namespace RQS::front {
         std::vector<RasterBorder> m_borders;
 
         std::unique_ptr<std::thread> m_background_thread;
+        std::mutex mtx;
+        std::condition_variable cv;
+        bool notified = true;
 
         RasterQuery::_llRes cornerRes;
         double cornerLatRes;
