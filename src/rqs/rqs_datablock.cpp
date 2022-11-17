@@ -237,21 +237,25 @@ void rqsDataBlock::debugWriteBitmap() {
 void rqsDataBlock::readRasterFromTuple(int rasterIndex,
                                        std::tuple<structures::nPoint, structures::nPoint> nLocs,
                                        structures::nPoint blockIndex) {
-    assert(std::get<0>(nLocs).r == std::get<1>(nLocs).r);
-    if(std::get<0>(m_rqsCallOrder[0][rasterIndex]) == nullptr) throw rqsReadingNullRaster(rasterIndex);
-
     int scanY = std::get<1>(nLocs).y - std::get<0>(nLocs).y;
     int scanX = std::get<1>(nLocs).x - std::get<0>(nLocs).x;
 
-    for(int row = 0; row < scanY; ++row) {
-        std::get<0>(m_rqsCallOrder[0][rasterIndex])->RasterIO(GF_Read,
-                                                      std::get<0>(nLocs).x,
-                                                      std::get<0>(nLocs).y + row,
-                                                      scanX, 1,
-                                                      _spBlock[row + blockIndex.y].get() + blockIndex.x,
-                                                      scanX, 1, GDT_Int32,
-                                                      0, 0
-                                                      );
+    assert(std::get<0>(nLocs).r == std::get<1>(nLocs).r);
+
+    if(std::get<0>(m_rqsCallOrder[0][rasterIndex]) == nullptr) {
+        for (int row = 0; row < scanY; ++row)
+            (_spBlock[row + blockIndex.y].get() + blockIndex.x)[scanY] = { 0 };
+    } else {
+        for (int row = 0; row < scanY; ++row) {
+            std::get<0>(m_rqsCallOrder[0][rasterIndex])->RasterIO(GF_Read,
+                                                                  std::get<0>(nLocs).x,
+                                                                  std::get<0>(nLocs).y + row,
+                                                                  scanX, 1,
+                                                                  _spBlock[row + blockIndex.y].get() + blockIndex.x,
+                                                                  scanX, 1, GDT_Int32,
+                                                                  0, 0
+            );
+        }
     }
 }
 
