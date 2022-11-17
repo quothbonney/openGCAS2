@@ -35,7 +35,7 @@ rqsDataBlock::rqsDataBlock(int id, int posX, int posY,
     //debugWriteBitmap();
 }
 
-void rqsDataBlock::readFromRaster() {
+void rqsDataBlock::deprecated_readFromRaster() {
     // Possibly GNU compiler bug (???) pointer to vector is a vector?, this appears to work though.
     auto raster = m_rqsDataInfo[0][m_origin.r];
 
@@ -259,7 +259,7 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
     }
 }
 
-void rqsDataBlock::n_readFromRaster() {
+void rqsDataBlock::readFromRaster() {
     // Determining an appropriate negative index with a reference to a nearby raster
     nPoint t;
     if(m_origin.isNullPoint()) {

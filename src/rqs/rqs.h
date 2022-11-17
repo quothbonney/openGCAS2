@@ -216,12 +216,12 @@ private:
     /**
      * @brief Reads from raster call stack to fill memory block
      */
-    void readFromRaster();
+    void deprecated_readFromRaster();
 
     /**
-     * @brief New method to read from raster to deprecated old one
+     * @brief Fill _spBlock with raster data
      */
-    void n_readFromRaster();
+    void readFromRaster();
 
     /**
      * @brief Read raster from a tuple of two nPoints
