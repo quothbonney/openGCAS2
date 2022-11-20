@@ -336,8 +336,8 @@ void rqsDataBlock::readFromRaster() {
         p4 = nPoint{xBound, ras.y + BLOCK_SIZE, rasterIndexInCallOrder};
 
         if (negativeInd) {
-            p2 = nPoint{0, BLOCK_SIZE - (yBound - ras.y), rasterIndexInCallOrder};
-            p6 = nPoint{xBound + ras.x, p2.y + BLOCK_SIZE, rasterIndexInCallOrder};
+            p2 = nPoint{0, yBound + ras.y, rasterIndexInCallOrder};
+            p6 = nPoint{BLOCK_SIZE + ras.x, p2.y + BLOCK_SIZE, rasterIndexInCallOrder};
         } else {
             p2 = nPoint{0, ras.y, rasterX};
             p6 = nPoint{BLOCK_SIZE - (yBound - ras.x), t.y + BLOCK_SIZE, rasterX};
@@ -445,7 +445,7 @@ void rqsDataBlock::readFromRaster() {
         if(p5.x >= 0 && p5.y >= 0 && p7.x >= 0 && p7.y >= 0) {
             auto tie3 = std::make_tuple(p5, p7);
             if(negativeInd)
-                readRasterFromTuple(rasterIndexInCallOrder, tie3, nPoint{0, -1 * ras.y, 0});
+                readRasterFromTuple(rasterIndexInCallOrder + 2, tie3, nPoint{0, -1 * ras.y, 0});
             else
                 readRasterFromTuple(rasterY, tie3, nPoint{0, (p3.y-p1.y), 0});
         }
@@ -453,7 +453,7 @@ void rqsDataBlock::readFromRaster() {
         if(p6.x >= 0 && p6.y >= 0 && p8.x >= 0 && p8.y >= 0) {
             auto tie3 = std::make_tuple(p6, p8);
             if(negativeInd)
-                readRasterFromTuple(rasterIndexInCallOrder + 1, tie3, nPoint{(-1 * p1.x), (-1 * p1.y), 0});
+                readRasterFromTuple(rasterIndexInCallOrder + 3, tie3, nPoint{(-1 * p1.x), (-1 * p1.y), 0});
             else
                 readRasterFromTuple(rasterXY, tie3, nPoint{(xBound-p1.x), (yBound-p1.y), 0});
         }

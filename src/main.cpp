@@ -1,19 +1,25 @@
 #include "rqs/rqs.h"
 #include "rqs/sfml_front.h"
-#include<unistd.h>
+#include <unistd.h>
 
 using namespace RQS::structures;
 
 int main(int argc, char *argv[]) {
     RQS::RasterQuery& rq = RQS::RasterQuery::get();
-    rq.init(llPoint{41.4, -91.2});
+    llPoint origin{41.4, -91.2};
+    rq.init(origin);
     RQS::front::DBVis vis;
 
     vis.start_thread();
     sleep(1);
-    rq.forceOriginTransform(llPoint{40.95, -91.4});
-    vis.refresh();
+    for(double i = 0; ; i += 0.05) {
+        rq.forceOriginTransform(llPoint{origin.lat + i, origin.lon + i});
+        vis.refresh();
+        sleep(1);
+    }
+
     vis.end_thread();
+    std::cout << "Thread";
     std::vector<llPoint> v{
         llPoint{42.1, -92.4}
     };

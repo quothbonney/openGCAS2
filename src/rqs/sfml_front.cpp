@@ -58,13 +58,17 @@ auto inline DBVis::llToPx(const RQS::structures::llPoint& loc) -> sf::Vector2f c
 
 void DBVis::render() {
     while (m_window.isOpen()) {
+        std::unique_lock<std::mutex> lock(mtx);
+
         sf::Event event;
         while (m_window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed) {
+                lock.unlock();
                 m_window.close();
+                break;
+            }
         }
 
-        std::unique_lock<std::mutex> lock(mtx);
         while(!notified) {
             cv.wait(lock);
         }
@@ -99,6 +103,7 @@ void DBVis::loadPoints(std::vector<llPoint> locs) {
 }
 
 void DBVis::refresh() {
+    notified = false;
     std::unique_lock<std::mutex> lock(mtx);
 
     m_borders.clear();
@@ -153,6 +158,11 @@ void DBVis::start_thread() {
 }
 
 void DBVis::end_thread() {
+    std::unique_lock<std::mutex> lock(mtx);
+    while(!notified) {
+        cv.wait(lock);
+    }
+    lock.unlock();
     m_background_thread->join();        // wait for thread termination
     m_background_thread.reset(NULL);
 }
