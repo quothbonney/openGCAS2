@@ -41,17 +41,62 @@ void RasterQuery::init(const llPoint& loc) {
     for(int i = -1; i < 2; ++i) {
         for(int j = -1; j < 2; ++j) {
             // Get origin of DataBlock
-            auto ll = offsetLL(loc, i*BLOCK_SIZE, j*BLOCK_SIZE, m_dataDirTransform);
-            nPoint origin = discreteIndex(ll);
-            // Allocate memory for it in array
-            db[index] = std::make_unique<RQS::rqsDataBlock>(index, j, i, *this, origin, ll);
-            // Save origin to protected attribute
+            llPoint ll = offsetLL(loc, i*BLOCK_SIZE, j*BLOCK_SIZE, m_dataDirTransform);
+            nPoint n = discreteIndex(ll);
+            nPoint origin = getCorrectOrigin(n, ll);
             m_dbOrigins[index] = origin;
+            // Save origin to protected attribute
+            m_dbLLOrigins[index] = ll;
+            index++;
+        }
+    }
+    index = 0;
+    for(int i = -1; i < 2; ++i) {
+        for(int j = -1; j < 2; ++j) {
+            db[index] = std::make_unique<RQS::rqsDataBlock>(
+                    index, j, i, *this, m_dbOrigins[index], m_dbLLOrigins[index]
+                    );
             index++;
         }
     }
 
     std::cout << "CLOSEST " <<getClosest(llPoint{42.1, -91.4});
+}
+
+auto RasterQuery::getCorrectOrigin(nPoint n_loc, llPoint ll_loc) -> nPoint {
+    // Determining an appropriate negative index with a reference to a nearby raster
+    nPoint t;
+    if(n_loc.isNullPoint()) {
+        nPoint working;
+        bool isDefined = false;
+        auto _res = defineLLRes(ll_loc);
+        // Iterate through the rasterCallOrder, looking for the raster that most closely to the bottom right of the point
+        for (int i = 0; i < 9; ++i) {
+            // If the raster doesn't exist, skip it (must reference point outside raster database to raster inside database)
+            if(std::get<1>(m_rasterCallOrder[i]) == -1) continue;
+            // Approximate the index of a raster from the llResolution
+            int lat = -1 * (m_dataDirTransform[i].lat_o - ll_loc.lat) / std::get<0>(_res);
+            int lon = -1 * (m_dataDirTransform[i].lon_o - ll_loc.lon) / std::get<1>(_res);
+            // If both the lat and lon index are negative (means the raster is to the bottom right of the point)
+            // Then define a working raster, but continue iterating through the rest of the rasters to determine
+            // If there is a better fit
+            if (lat < 0 && lon < 0) {
+                if(!isDefined) {
+                    working = nPoint{lon, lat, std::get<1>(m_rasterCallOrder[i])};
+                    isDefined = true;
+                } else {
+                    lat > working.y && lon > working.x
+                    ? working = nPoint{lon, lat, std::get<1>(m_rasterCallOrder[i])}
+                    : working = working;
+                }
+            }
+        }
+        t = working;
+        isDefined ? : throw rqsTargetNotFoundInCallOrder{};
+    } else {
+        t = n_loc;
+    }
+    return t;
 }
 
 auto RasterQuery::readDataDir() -> std::vector<geoTransformData> {

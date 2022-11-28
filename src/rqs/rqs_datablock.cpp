@@ -26,12 +26,12 @@ rqsDataBlock::rqsDataBlock(int id, int posX, int posY,
     _res = RasterQuery::get().defineLLRes(m_llOrigin);
     m_rqsDataInfo = &rq.m_dataDirTransform;
     m_rqsCallOrder = &rq.m_rasterCallOrder;
+    m_rqsDBOrigins = &rq.m_dbOrigins;
 
     readFromRaster();
     std::cout << "Raster Origin: " << m_origin.x << " " << m_origin.y << " " << m_origin.r << "\n\n\n";
-    for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
-        if(std::get<1>(m_rqsCallOrder[0][i]) == m_origin.r) { /*std::cout<< "Found Index "<< i << "\n" ; break;*/ }
-    }
+    // lambda for getting the call order index of a data index
+
     //debugWriteBitmap();
 }
 
@@ -240,8 +240,6 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
     int scanY = std::get<1>(nLocs).y - std::get<0>(nLocs).y;
     int scanX = std::get<1>(nLocs).x - std::get<0>(nLocs).x;
 
-    assert(std::get<0>(nLocs).r == std::get<1>(nLocs).r);
-
     if(std::get<0>(m_rqsCallOrder[0][rasterIndex]) == nullptr) {
         for (int row = 0; row < scanY; ++row)
             (_spBlock[row + blockIndex.y].get() + blockIndex.x)[scanY] = { 0 };
@@ -260,43 +258,13 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
 }
 
 void rqsDataBlock::readFromRaster() {
-    // Determining an appropriate negative index with a reference to a nearby raster
-    nPoint t;
-    if(m_origin.isNullPoint()) {
-        nPoint working;
-        bool isDefined = false;
-        // Iterate through the rasterCallOrder, looking for the raster that most closely to the bottom right of the point
-        for (int i = 0; i < 9; ++i) {
-            // If the raster doesn't exist, skip it (must reference point outside raster database to raster inside database)
-            if(std::get<1>(m_rqsCallOrder[0][i]) == -1) continue;
-            // Approximate the index of a raster from the llResolution
-            int lat = -1 * (m_rqsDataInfo[0][i].lat_o - m_llOrigin.lat) / std::get<0>(_res);
-            int lon = -1 * (m_rqsDataInfo[0][i].lon_o - m_llOrigin.lon) / std::get<1>(_res);
-            // If both the lat and lon index are negative (means the raster is to the bottom right of the point)
-            // Then define a working raster, but continue iterating through the rest of the rasters to determine
-            // If there is a better fit
-            if (lat < 0 && lon < 0) {
-                if(!isDefined) {
-                    working = nPoint{lon, lat, std::get<1>(m_rqsCallOrder[0][i])};
-                    isDefined = true;
-                } else {
-                    lat > working.y && lon > working.x
-                        ? working = nPoint{lon, lat, std::get<1>(m_rqsCallOrder[0][i])}
-                        : working = working;
-                }
-            }
+    auto rico = [&](int index) -> int {
+        for (int i = 0; i < m_rqsCallOrder->size(); ++i) {
+            if (std::get<1>(m_rqsCallOrder[0][i]) == index) {  return i; }
         }
-        t = working;
-        isDefined ? : throw rqsTargetNotFoundInCallOrder{};
-    } else {
-        t = m_origin;
-    }
-
-    nPoint ras = t; // GNU compiler is being weird and making me do this or UB???
-    int rasterIndexInCallOrder;
-    for(int i = 0; i < m_rqsCallOrder->size(); ++i) {
-        if(std::get<1>(m_rqsCallOrder[0][i]) == ras.r) { rasterIndexInCallOrder = i; break; }
-    }
+    };
+    nPoint ras = m_origin;
+    int rasterIndexInCallOrder = rico(m_origin.r);
     ras.r = rasterIndexInCallOrder;
 
     int xBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize;
@@ -340,7 +308,7 @@ void rqsDataBlock::readFromRaster() {
             p6 = nPoint{BLOCK_SIZE + ras.x, p2.y + BLOCK_SIZE, rasterIndexInCallOrder};
         } else {
             p2 = nPoint{0, ras.y, rasterX};
-            p6 = nPoint{BLOCK_SIZE - (yBound - ras.x), t.y + BLOCK_SIZE, rasterX};
+            p6 = nPoint{BLOCK_SIZE - (yBound - ras.x), ras.y + BLOCK_SIZE, rasterX};
         }
 
         if(p1.x >= 0 && p1.y >= 0 && p4.x >= 0 && p4.y >= 0) {
@@ -408,14 +376,18 @@ void rqsDataBlock::readFromRaster() {
         p3 = nPoint{xBound, yBound, rasterIndexInCallOrder};
 
         if(negativeInd) {
-            p2 = nPoint{0, yBound + ras.y, rasterX};
-            p4 = nPoint{BLOCK_SIZE + ras.x, yBound, rasterX};
+            // A four-intersection datablock guarantees the existence of other datablocks around it
+            // However it doesn't guarantee which raster they will belong to. So, it receives data
+            // About the origins of the db's surrounding it, and references the raster it is supposed
+            // To be on from that data passed from the RasterQuery class.
+            p2 = nPoint{0, yBound + ras.y};
+            p4 = nPoint{BLOCK_SIZE + ras.x, yBound};
 
-            p5 = nPoint{xBound + ras.x, 0, rasterY};
-            p7 = nPoint{xBound, BLOCK_SIZE + ras.y, rasterY};
+            p5 = nPoint{xBound + ras.x, 0};
+            p7 = nPoint{xBound, BLOCK_SIZE + ras.y};
 
-            p6 = nPoint{0, 0, rasterIndexInCallOrder};
-            p8 = nPoint{ras.x + BLOCK_SIZE, ras.y + BLOCK_SIZE, rasterIndexInCallOrder};
+            p6 = nPoint{0, 0};
+            p8 = nPoint{ras.x + BLOCK_SIZE, ras.y + BLOCK_SIZE};
         } else {
             p2 = nPoint{0, ras.y, rasterX};
             p4 = nPoint{BLOCK_SIZE - (xBound - ras.x), yBound, rasterX};
@@ -437,7 +409,8 @@ void rqsDataBlock::readFromRaster() {
         if(p2.x >= 0 && p2.y >= 0 && p4.x >= 0 && p4.y >= 0) {
             auto tie2 = std::make_tuple(p2, p4);
             if(negativeInd)
-                readRasterFromTuple(rasterIndexInCallOrder - 2, tie2, nPoint{-1 * ras.x, 0, 0});
+                readRasterFromTuple(rico(m_rqsDBOrigins[0][m_id + 1].r), tie2,
+                                    nPoint{-1 * ras.x, 0, p2.r});
             else
                 readRasterFromTuple(rasterX, tie2, nPoint{xBound - p1.x, 0, 0});
         }
@@ -445,21 +418,21 @@ void rqsDataBlock::readFromRaster() {
         if(p5.x >= 0 && p5.y >= 0 && p7.x >= 0 && p7.y >= 0) {
             auto tie3 = std::make_tuple(p5, p7);
             if(negativeInd)
-                readRasterFromTuple(rasterIndexInCallOrder + 2, tie3, nPoint{0, -1 * ras.y, 0});
+                readRasterFromTuple(rico(m_rqsDBOrigins[0][m_id + 3].r), tie3, nPoint{0, -1 * ras.y});
             else
-                readRasterFromTuple(rasterY, tie3, nPoint{0, (p3.y-p1.y), 0});
+                readRasterFromTuple(rasterY, tie3, nPoint{0, (p3.y-p1.y)});
         }
 
         if(p6.x >= 0 && p6.y >= 0 && p8.x >= 0 && p8.y >= 0) {
             auto tie3 = std::make_tuple(p6, p8);
             if(negativeInd)
-                readRasterFromTuple(rasterIndexInCallOrder + 3, tie3, nPoint{(-1 * p1.x), (-1 * p1.y), 0});
+                readRasterFromTuple(rico(m_rqsDBOrigins[0][m_id + 4].r), tie3, nPoint{(-1 * p1.x), (-1 * p1.y), 0});
             else
                 readRasterFromTuple(rasterXY, tie3, nPoint{(xBound-p1.x), (yBound-p1.y), 0});
         }
     }
 
-    std::cout << t;
+    std::cout << ras;
 }
 
 

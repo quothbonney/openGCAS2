@@ -6,10 +6,11 @@ using namespace RQS::structures;
 
 int main(int argc, char *argv[]) {
     RQS::RasterQuery& rq = RQS::RasterQuery::get();
-    llPoint origin{41.4, -91.2};
+    llPoint origin{41.8, -91.02};
     rq.init(origin);
     RQS::front::DBVis vis;
-
+    vis.render();
+/*
     vis.start_thread();
     sleep(1);
     for(double i = 0; ; i += 0.05) {
@@ -24,6 +25,6 @@ int main(int argc, char *argv[]) {
         llPoint{42.1, -92.4}
     };
     vis.loadPoints(v);
-
+    */
     return 0;
 }

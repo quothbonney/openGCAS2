@@ -78,10 +78,11 @@ private:
      * @brief returns nPoint origin of each rqsDataBlock in array
      * @see defineCallOrder()
      */
-    inline auto
-    getBlockLocation(RQS::structures::llPoint loc, int raster, int posX, int posY) -> RQS::structures::nPoint;
+    inline auto getBlockLocation(RQS::structures::llPoint loc, int raster, int posX, int posY) -> RQS::structures::nPoint;
 
     inline auto getClosest(const RQS::structures::llPoint &loc) -> int;
+
+    auto getCorrectOrigin(structures::nPoint n_loc, structures::llPoint ll_loc) -> structures::nPoint;
 
     // Array of rqsDataBlock from which information can be read
     std::array<std::unique_ptr<RQS::rqsDataBlock>, 9> db;
@@ -98,6 +99,9 @@ protected:
 
     // Origins of each dataBlock stored in matrix
     std::array<RQS::structures::nPoint, 9> m_dbOrigins;
+
+    // Origins of above as llPoints
+    std::array<structures::llPoint, 9> m_dbLLOrigins;
 
 public:
     /**
@@ -194,6 +198,7 @@ private:
     // Attributes inherited from the singleton reference RasterQuery
     std::vector<RasterQuery::geoTransformData> *m_rqsDataInfo;
     std::array<RasterQuery::_rb_tup, 9> *m_rqsCallOrder;
+    std::array<structures::nPoint, 9> *m_rqsDBOrigins;
 
     // Initializer variables
     std::tuple<double, double, int> _res;
