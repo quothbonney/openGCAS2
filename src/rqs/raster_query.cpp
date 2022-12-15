@@ -358,7 +358,8 @@ void RasterQuery::forceOriginTransform(structures::llPoint loc) {
         for(int j = -1; j < 2; ++j) {
             // Get origin of DataBlock
             auto ll = offsetLL(loc, i*BLOCK_SIZE, j*BLOCK_SIZE, m_dataDirTransform);
-            nPoint origin = discreteIndex(ll);
+            nPoint n = discreteIndex(ll);
+            nPoint origin = getCorrectOrigin(n, ll);
             // Allocate memory for it in array
             db[index] = std::make_unique<RQS::rqsDataBlock>(index, j, i, *this, origin, ll);
             // Save origin to protected attribute
