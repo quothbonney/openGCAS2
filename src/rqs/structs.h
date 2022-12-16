@@ -26,6 +26,10 @@ namespace RQS::structures {
         int y;
         int r;
 
+        // Avoids segfault by forcing readRaster method to skip
+        // Basically a big red button
+        bool unreadable = false;
+
         [[nodiscard]] bool isNullPoint() const;
 
         nPoint reflect();

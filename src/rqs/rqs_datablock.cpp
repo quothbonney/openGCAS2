@@ -237,6 +237,7 @@ void rqsDataBlock::debugWriteBitmap() {
 void rqsDataBlock::readRasterFromTuple(int rasterIndex,
                                        std::tuple<structures::nPoint, structures::nPoint> nLocs,
                                        structures::nPoint blockIndex) {
+
     int scanY = std::get<1>(nLocs).y - std::get<0>(nLocs).y;
     int scanX = std::get<1>(nLocs).x - std::get<0>(nLocs).x;
 
@@ -258,6 +259,9 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
 }
 
 void rqsDataBlock::readFromRaster() {
+    if(m_origin.unreadable)
+        return;
+
     auto rico = [&](int index) -> int {
         for (int i = 0; i < m_rqsCallOrder->size(); ++i) {
             if (std::get<1>(m_rqsCallOrder[0][i]) == index) {  return i; }
