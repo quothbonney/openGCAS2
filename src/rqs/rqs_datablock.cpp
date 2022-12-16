@@ -27,7 +27,6 @@ rqsDataBlock::rqsDataBlock(int id, int posX, int posY,
     m_rqsDataInfo = &rq.m_dataDirTransform;
     m_rqsCallOrder = &rq.m_rasterCallOrder;
     m_rqsDBOrigins = &rq.m_dbOrigins;
-
     readFromRaster();
     std::cout << "Raster Origin: " << m_origin.x << " " << m_origin.y << " " << m_origin.r << "\n\n\n";
     // lambda for getting the call order index of a data index

@@ -3,7 +3,9 @@ project(openGCAS)
 
 find_package(GDAL REQUIRED)
 include(FetchContent)
-
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${openGCAS_SOURCE_DIR}/bin)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 
@@ -22,7 +24,6 @@ FetchContent_Declare(SFML
         GIT_REPOSITORY https://github.com/SFML/SFML.git
         GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
-
 add_executable(openGCAS
         src/main.cpp
         src/rqs/raster_query.cpp

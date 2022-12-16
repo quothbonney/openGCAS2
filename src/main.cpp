@@ -2,13 +2,13 @@
 #include "rqs/sfml_front.h"
 #include <unistd.h>
 
-//#define MOVING
+#define MOVING
 
 using namespace RQS::structures;
 
 int main(int argc, char *argv[]) {
     RQS::RasterQuery& rq = RQS::RasterQuery::get();
-    llPoint origin{42.8, -90.0};
+    llPoint origin{42.8, -90.1};
     rq.init(origin);
     RQS::front::DBVis vis;
 #ifndef MOVING

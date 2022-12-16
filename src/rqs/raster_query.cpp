@@ -85,7 +85,7 @@ auto RasterQuery::getCorrectOrigin(nPoint n_loc, llPoint ll_loc) -> nPoint {
                     working = nPoint{lon, lat, std::get<1>(m_rasterCallOrder[i])};
                     isDefined = true;
                 } else {
-                    lat > working.y && lon > working.x
+                    lat >= working.y && lon >= working.x
                     ? working = nPoint{lon, lat, std::get<1>(m_rasterCallOrder[i])}
                     : working = working;
                 }

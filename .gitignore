@@ -2,7 +2,8 @@
 /.idea/
 /build/
 /site/
-
+# Personal code completion file for neovim
+.ccls
 
 #CMake Stuff
 CMakeLists.txt.user
