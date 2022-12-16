@@ -241,8 +241,8 @@ private:
                              structures::nPoint blockIndex);
 public:
     // Origin in nPoint and llPoint form
-    RQS::structures::nPoint m_origin;
-    RQS::structures::llPoint m_llOrigin;
+    const RQS::structures::nPoint m_origin;
+    const RQS::structures::llPoint m_llOrigin;
 
     // Id of rqsDataBlock
     const int m_id;

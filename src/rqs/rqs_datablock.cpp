@@ -268,7 +268,7 @@ void rqsDataBlock::readFromRaster() {
         }
     };
     nPoint ras = m_origin;
-    int rasterIndexInCallOrder = rico(m_origin.r);
+    int rasterIndexInCallOrder = m_origin.r;
     ras.r = rasterIndexInCallOrder;
 
     int xBound = m_rqsDataInfo[0][rasterIndexInCallOrder].r_xSize;
@@ -340,8 +340,8 @@ void rqsDataBlock::readFromRaster() {
         // If the points are negative, consider that in the half that should exist
         // No need to do it for the top half as it is guaranteed to be negative and thus unreadable
         if(negativeInd) {
-            p3 = nPoint{xBound + ras.x, 0, newRaster};
-            p6 = nPoint{xBound + ras.x + BLOCK_SIZE, BLOCK_SIZE + ras.y, newRaster};
+            p3 = nPoint{xBound + ras.x, 0, rasterIndexInCallOrder};
+            p6 = nPoint{xBound + ras.x + BLOCK_SIZE, BLOCK_SIZE + ras.y, rasterIndexInCallOrder};
         } else {
             p3 = nPoint{ras.x, 0, newRaster};
             p6 = nPoint{ras.x + BLOCK_SIZE, BLOCK_SIZE - (yBound - ras.y), newRaster};
@@ -359,9 +359,9 @@ void rqsDataBlock::readFromRaster() {
         if(p3.x >= 0 && p3.y >= 0 && p6.x >= 0 && p6.y >= 0) {
             auto tie2 = std::make_tuple(p3, p6);
             if (negativeInd)
-                readRasterFromTuple(newRaster, tie2, nPoint{0, -1 * p1.y, 0});
+                readRasterFromTuple(rasterIndexInCallOrder, tie2, nPoint{0, -1 * p1.y, 0});
             else
-                readRasterFromTuple(newRaster, tie2, nPoint{0, yBound - p1.y, 0});
+                readRasterFromTuple(rasterY, tie2, nPoint{0, yBound - p1.y, 0});
         }
     }
     else if(xIntersections && yIntersections) {

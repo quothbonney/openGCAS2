@@ -65,6 +65,11 @@ void RasterQuery::init(const llPoint& loc) {
 
 auto RasterQuery::getCorrectOrigin(nPoint n_loc, llPoint ll_loc) -> nPoint {
     // Determining an appropriate negative index with a reference to a nearby raster
+    auto rico = [&](int index) -> int {
+        for (int i = 0; i < m_rasterCallOrder.size(); ++i) {
+            if (std::get<1>(m_rasterCallOrder[i]) == index) {  return i; }
+        }
+    };
     nPoint t;
     if(n_loc.isNullPoint()) {
         nPoint working;
@@ -96,6 +101,7 @@ auto RasterQuery::getCorrectOrigin(nPoint n_loc, llPoint ll_loc) -> nPoint {
     } else {
         t = n_loc;
     }
+    t.r = rico(t.r);
     return t;
 }
 
