@@ -52,7 +52,6 @@ void DBVis::loadData() {
 auto inline DBVis::llToPx(const RQS::structures::llPoint& loc) -> sf::Vector2f const {
     double x = ((loc.lat - llOrigin.lat)/std::get<0>(cornerRes)) * (m_scale*m_scale);
     double y = ((loc.lon - llOrigin.lon)/std::get<1>(cornerRes)) * (m_scale*m_scale);
-    std::cout << "\nllToPx(): " << x << " " << y;
     return sf::Vector2f{1*(float)y, 1*(float)x};
 }
 

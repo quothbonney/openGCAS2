@@ -259,6 +259,7 @@ void rqsDataBlock::readRasterFromTuple(int rasterIndex,
 }
 
 void rqsDataBlock::readFromRaster() {
+    // If the origin indicates that this datablock has no real parts, exit early from function
     if(m_origin.unreadable)
         return;
 

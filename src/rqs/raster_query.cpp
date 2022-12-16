@@ -355,7 +355,7 @@ auto RasterQuery::defineLLRes(const llPoint& loc) -> std::tuple<double, double, 
     assert(*lambIter != -1);
     //assert(c == *lambIndex);
     std::cout << "INDEX FOUND: " << *lambIter << "\n\n";
-    return std::make_tuple(m_dataDirTransform[lambIndex].lat_res, m_dataDirTransform[lambIndex].lon_res, *lambIter);
+    return std::make_tuple(m_dataDirTransform[lambIndex].lat_res, m_dataDirTransform[lambIndex].lon_res, lambIndex);
 }
 
 void RasterQuery::forceOriginTransform(structures::llPoint loc) {
