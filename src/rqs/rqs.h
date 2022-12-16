@@ -169,7 +169,7 @@ public:
      * @param loc llPoint
      * @return std::tuple<double, double, int> of typedef RasterQuery::_llRes with definition (lat_res, lon_res, raster)
      */
-    auto defineLLRes(structures::llPoint loc) -> _llRes;
+    auto defineLLRes(const structures::llPoint& loc) -> _llRes;
 
     ///\brief Get m_rasterCallOrder
     auto getCallOrder() { return m_rasterCallOrder; }

@@ -329,25 +329,33 @@ RQS::structures::llPoint RasterQuery::geoTransformData::maxLL() const {
     return llPoint{maxLat, maxLon};
 }
 
-auto RasterQuery::defineLLRes(llPoint loc) -> std::tuple<double, double, int> {
+auto RasterQuery::defineLLRes(const llPoint& loc) -> std::tuple<double, double, int> {
     static std::vector<int> l_callOrder{};
+    // Get existent rasters in call order (non null) and sort them
     if(l_callOrder.empty()) {
         for (const auto &in: m_rasterCallOrder)
-            if (std::get<1>(in) != -2) l_callOrder.push_back(std::get<1>(in));
+            if (std::get<1>(in) != -1) l_callOrder.push_back(std::get<1>(in));
         std::sort(l_callOrder.begin(), l_callOrder.end());
     }
 
     // Get the closest raster and check if it exists in the call order.
     // If not, assign it to the next raster in the call order
-    int c = RQS::RasterQuery::get().getClosest(loc);
-    auto lambIndex = std::lower_bound(l_callOrder.begin(), l_callOrder.end(), c,
-                                      [](int const & lhs,  int target) -> bool
+    int lambIndex;
+    int closestNonNull = RQS::RasterQuery::get().getClosest(loc);
+    auto lambIter = std::lower_bound(l_callOrder.begin(), l_callOrder.end(), closestNonNull,
+                                     [](int const &lhs,  int target) -> bool
                                 { return lhs < target; });
 
-    assert(*lambIndex != -1);
+    if(lambIter == l_callOrder.end() && *lambIter != closestNonNull)
+         lambIndex = l_callOrder.back();
+    else
+        lambIndex = *lambIter;
+
+
+    assert(*lambIter != -1);
     //assert(c == *lambIndex);
-    std::cout << "INDEX FOUND: " << *lambIndex << "\n\n";
-    return std::make_tuple(m_dataDirTransform[*lambIndex].lat_res, m_dataDirTransform[*lambIndex].lon_res, *lambIndex);
+    std::cout << "INDEX FOUND: " << *lambIter << "\n\n";
+    return std::make_tuple(m_dataDirTransform[*lambIter].lat_res, m_dataDirTransform[*lambIter].lon_res, *lambIter);
 }
 
 void RasterQuery::forceOriginTransform(structures::llPoint loc) {
