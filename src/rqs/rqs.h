@@ -11,7 +11,7 @@
 
 #include "gdal_priv.h"
 #include "rqs_exceptions.h"
-#include "structs.h"
+#include "../nrqs/structs.h"
 #include <vector>
 #include <array>
 #include <iostream>

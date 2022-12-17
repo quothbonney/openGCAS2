@@ -1,4 +1,4 @@
-#include "rqs/rqs.h"
+#include "nrqs/rqs.h"
 #include "rqs/sfml_front.h"
 #include <unistd.h>
 

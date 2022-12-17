@@ -85,7 +85,8 @@ auto RasterQuery::getCorrectOrigin(nPoint n_loc, llPoint ll_loc) -> nPoint {
             // If both the lat and lon index are negative (means the raster is to the bottom right of the point)
             // Then define a working raster, but continue iterating through the rest of the rasters to determine
             // If there is a better fit
-            if (lat < 0 && lon < 0) {
+            if ((lat < 0 && lon < 0)
+            || lat < m_dataDirTransform[i]) {
                 if(!isDefined) {
                     working = nPoint{lon, lat, std::get<1>(m_rasterCallOrder[i])};
                     isDefined = true;

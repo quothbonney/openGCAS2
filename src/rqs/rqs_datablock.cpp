@@ -359,7 +359,7 @@ void rqsDataBlock::readFromRaster() {
         if(p3.x >= 0 && p3.y >= 0 && p6.x >= 0 && p6.y >= 0) {
             auto tie2 = std::make_tuple(p3, p6);
             if (negativeInd)
-                readRasterFromTuple(rasterIndexInCallOrder, tie2, nPoint{0, -1 * p1.y, 0});
+                readRasterFromTuple(rasterIndexInCallOrder - 3, tie2, nPoint{0, -1 * p1.y, 0});
             else
                 readRasterFromTuple(rasterY, tie2, nPoint{0, yBound - p1.y, 0});
         }
@@ -404,7 +404,7 @@ void rqsDataBlock::readFromRaster() {
         }
 
 
-
+        // read rasters in reference to the other origins
         if(p1.x >= 0 && p1.y >= 0 && p3.x >= 0 && p3.y >= 0) {
             auto tie1 = std::make_tuple(p1, p3);
             readRasterFromTuple(rasterIndexInCallOrder, tie1, nPoint{0, 0, 0});
@@ -413,7 +413,7 @@ void rqsDataBlock::readFromRaster() {
         if(p2.x >= 0 && p2.y >= 0 && p4.x >= 0 && p4.y >= 0) {
             auto tie2 = std::make_tuple(p2, p4);
             if(negativeInd)
-                readRasterFromTuple(rico(m_rqsDBOrigins[0][m_id + 1].r), tie2,
+                readRasterFromTuple(m_rqsDBOrigins[0][m_id + 1].r, tie2,
                                     nPoint{-1 * ras.x, 0, p2.r});
             else
                 readRasterFromTuple(rasterX, tie2, nPoint{xBound - p1.x, 0, 0});
@@ -422,7 +422,7 @@ void rqsDataBlock::readFromRaster() {
         if(p5.x >= 0 && p5.y >= 0 && p7.x >= 0 && p7.y >= 0) {
             auto tie3 = std::make_tuple(p5, p7);
             if(negativeInd)
-                readRasterFromTuple(rico(m_rqsDBOrigins[0][m_id + 3].r), tie3, nPoint{0, -1 * ras.y});
+                readRasterFromTuple(m_rqsDBOrigins[0][m_id + 3].r, tie3, nPoint{0, -1 * ras.y});
             else
                 readRasterFromTuple(rasterY, tie3, nPoint{0, (p3.y-p1.y)});
         }
@@ -430,7 +430,7 @@ void rqsDataBlock::readFromRaster() {
         if(p6.x >= 0 && p6.y >= 0 && p8.x >= 0 && p8.y >= 0) {
             auto tie3 = std::make_tuple(p6, p8);
             if(negativeInd)
-                readRasterFromTuple(rico(m_rqsDBOrigins[0][m_id + 4].r), tie3, nPoint{(-1 * p1.x), (-1 * p1.y), 0});
+                readRasterFromTuple(m_rqsDBOrigins[0][m_id + 4].r, tie3, nPoint{(-1 * p1.x), (-1 * p1.y), 0});
             else
                 readRasterFromTuple(rasterXY, tie3, nPoint{(xBound-p1.x), (yBound-p1.y), 0});
         }

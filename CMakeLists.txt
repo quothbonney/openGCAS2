@@ -26,9 +26,8 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 add_executable(openGCAS
         src/main.cpp
-        src/rqs/raster_query.cpp
-        src/rqs/rqs_datablock.cpp
-        src/rqs/sfml_front.cpp src/rqs/sfml_front.h src/rqs/structs.cpp)
+        src/rqs/sfml_front.cpp src/rqs/sfml_front.h src/rqs/structs.cpp
+        src/nrqs/rqs.h src/nrqs/rqs_data_block.cpp)
 target_link_libraries(openGCAS PRIVATE GDAL::GDAL)
 target_link_libraries(openGCAS PRIVATE sfml-graphics)
 
