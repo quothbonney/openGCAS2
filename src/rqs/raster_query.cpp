@@ -195,7 +195,7 @@ auto RasterQuery::discreteIndex(const llPoint& loc) -> nPoint {
             return nPoint{lonIndex, latIndex, lonMax};
         } else {
             // Return null point if point is not within a raster
-            return nPoint{0, 0, -1};
+            return nPoint{0, 0,-1};
         }
     }
     // Return null if something has catastrophically failed and the above if statement is false

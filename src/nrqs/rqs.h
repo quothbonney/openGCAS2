@@ -10,6 +10,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include "map"
 #include "structs.h"
 #include "gdal_priv.h"
 
@@ -25,15 +26,15 @@ namespace RQS {
         Data(Data const&) = delete;
         Data(Data&&) = delete;
 
-
         std::vector<structures::geoTransformData> v_availableRasterFiles;
+        std::map<structures::llPoint, structures::geoTransformData> m_rasterMap;
 
 		struct callOrder {
 			std::array<int, 9> a_callOrderIndex;
 
 			std::array<GDALRasterBand*, 9> a_callOrderRawBand;
 
-            decltype(a_callOrderIndex) callOrderInit();
+            auto callOrderInit(const structures::llPoint& llPlanePos) -> std::array<int, 9>;
 		};
 		
 		struct dbInfo {
@@ -67,6 +68,8 @@ namespace RQS {
     auto readDataDir() -> std::vector<structures::geoTransformData>;
 
     auto discreteIndex(const structures::llPoint& llLoc) -> structures::nPoint;
+
+    auto getClosest(const structures::llPoint& llLoc, const std::vector<structures::geoTransformData>& d_availableRasterFiles) -> std::shared_ptr<structures::geoTransformData>;
 }
 
 #endif //OPENGCAS_RQS_H

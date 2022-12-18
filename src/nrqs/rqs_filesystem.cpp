@@ -38,7 +38,8 @@ auto RQS::readDataDir() -> std::vector<structures::geoTransformData> {
     }
 
     auto sortRasters = [](const structures::geoTransformData& rhs, const structures::geoTransformData& lhs) -> bool {
-        return structures::llPoint{lhs.lat_o, lhs.lon_o} > structures::llPoint{rhs.lat_o, rhs.lon_o};
+        return structures::llPoint{rhs.lat_o, rhs.lon_o} < structures::llPoint{lhs.lat_o, lhs.lon_o};
+
     };
 
     std::sort(geoTransformVector.begin(), geoTransformVector.end(), sortRasters);
