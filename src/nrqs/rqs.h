@@ -32,6 +32,8 @@ namespace RQS {
 			std::array<int, 9> a_callOrderIndex;
 
 			std::array<GDALRasterBand*, 9> a_callOrderRawBand;
+
+            decltype(a_callOrderIndex) callOrderInit();
 		};
 		
 		struct dbInfo {
@@ -40,6 +42,9 @@ namespace RQS {
 		};
 
 		std::array<std::unique_ptr<RQS::RQSDataBlock>, 9> sp_dbArray;
+
+        void init();
+
     private:
         Data() = default;
 	};
@@ -55,8 +60,13 @@ namespace RQS {
 
 
 	};
+    /**
+     * @brief define m_dataDirTransform vector attribute with
+     * geoTransForm data from data/ directory
+     */
+    auto readDataDir() -> std::vector<structures::geoTransformData>;
 
-    auto readDataDir() -> std::vector<structures::geoTransformData>
+    auto discreteIndex(const structures::llPoint& llLoc) -> structures::nPoint;
 }
 
 #endif //OPENGCAS_RQS_H
