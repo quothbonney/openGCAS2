@@ -27,7 +27,7 @@ namespace RQS {
         Data(Data&&) = delete;
 
         std::vector<structures::geoTransformData> v_availableRasterFiles;
-        std::map<structures::llPoint, structures::geoTransformData> m_rasterMap;
+        std::map<structures::llPoint, structures::geoTransformData*> m_rasterMap;
 
 		struct callOrder {
 			std::array<int, 9> a_callOrderIndex;
@@ -45,6 +45,8 @@ namespace RQS {
 		std::array<std::unique_ptr<RQS::RQSDataBlock>, 9> sp_dbArray;
 
         void init();
+
+        auto findInRasterMap(const structures::llPoint llLoc) -> std::shared_ptr<structures::geoTransformData>;
 
     private:
         Data() = default;

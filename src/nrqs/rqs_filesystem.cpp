@@ -30,7 +30,9 @@ auto RQS::readDataDir() -> std::vector<structures::geoTransformData> {
                         GDALTransform[5],
                         e_dataset->GetRasterXSize(),
                         e_dataset->GetRasterYSize(),
+                        false
                 });
+
                 rasterIndex++;
                 GDALClose(e_dataset);
             }
